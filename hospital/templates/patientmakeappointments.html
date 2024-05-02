@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% include 'include.html' %}
+    {% load static %}
+    <style>
+        body {
+            background-image: url("{% static 'img/MainClinica.png' %}");
+            background-size: cover; 
+            background-position: center;
+                }
+    </style>
+    <style>
+        /* Estilos para el pop-up */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fefefe;
+            border: 1px solid #888;
+            z-index: 9999;
+            padding: 20px;
+            box-shadow: 0px 0px 10px 0px #000000;
+        }
+        .popup__overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+        }
+        
+        .popup__button-container {
+            text-align: center;
+        }
+    </style>
+</head>
+
+
+<body>
+    {% include 'adminnav.html' %}
+    <div id="wrapper">
+        {% include 'patient_nav.html' %}
+        <div class="page-content-wrapper">
+            <div class="container-fluid"><a class="btn btn-link" role="button" id="menu-toggle" href="#menu-toggle"><i class="fa fa-bars"></i></a>
+                <div class="row register-form">
+                    <div class="col-md-8 offset-md-2">
+                        <form class="custom-form" id="appointment-form" method="post">
+                            {% csrf_token %}
+                            <h1 style="margin-top: 0px;">Reserva tu Cita Médica</h1>
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="name-input-field">Especialidad</label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <select class="form-control" name="doctorspecialization">
+                                        <option value="" selected disabled>Seleccione especialidad</option>
+                                        {% for doctor in alldoctors %}
+                                            <option value="{{ doctor.especialidad }}">{{ doctor.especialidad }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="name-input-field">Nombre del profesional</label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <select class="form-control" name="doctoremail">
+                                        <option value="" selected disabled>Seleccione doctor</option>
+                                        {% for doctor in alldoctors %}
+                                            <option value="{{ doctor.email }}">{{ doctor.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {% for d in alldoctors %}
+                            <input type="hidden" value="{{d.name}}" name="doctorname">
+                            {% endfor %}
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column"><label class="col-form-label" for="pawssword-input-field">Nombre</label></div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="text" value="{{user.first_name}}" name="patientname">
+                                </div>
+                            </div>
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column"><label class="col-form-label" for="pawssword-input-field">Email</label></div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="text" value="{{user.username}}" name="patientemail">
+                                </div>
+                            </div>
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column"><label class="col-form-label" for="repeat-pawssword-input-field">Fecha de la Cita</label></div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="date" name="appointmentdate" required="">
+                                </div>
+                            </div>
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column"><label class="col-form-label" for="repeat-pawssword-input-field">Hora de la Cita</label></div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="time" placeholder="enter time" name="appointmenttime" required="">
+                                </div>
+                            </div>
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column"><label class="col-form-label" for="repeat-pawssword-input-field">Síntomas</label></div>
+                                <div class="col-sm-6 input-column">
+                                    <textarea class="form-control" name="symptoms" required=""></textarea>
+                                </div>
+                            </div>
+                            <button class="btn btn-light submit-button" type="submit" onclick="submitForm()" id="submit-button">Reserva y pago de Cita</button>
+                        </form>
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pop-up -->
+    <div id="popup" class="popup" style="display: none;">
+        <p>¡Reserva realizada con éxito!</p>
+        <div class="popup__button-container">
+            <button class="btn btn-primary popup__button" onclick="closePopup()">Cerrar</button>
+        </div>
+    </div>
+
+    <div class="scroll-top-wrapper"><span class="scroll-top-inner"><i class="fa fa-arrow-circle-up"></i></span></div>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/back-to-top-scroll.js' %}"></script>
+    <script src="{% static 'js/Bold-BS4-Animated-Back-To-Top.js' %}"></script>
+    <script src="{% static 'js/bs-init.js' %}"></script>
+    <script src="{% static 'js/Sidebar-Menu.js' %}"></script>
+    <script>
+        function submitForm() {
+            var form = document.getElementById('appointment-form');
+            if (form.checkValidity()) {
+                // Envía el formulario al servidor
+                form.submit();
+                // Muestra el popup
+                document.getElementById("popup").style.display = "block";
+                // Deshabilita el botón de envío del formulario
+                document.getElementById("submit-button").disabled = true;
+            } else {
+                form.reportValidity();
+            }
+        }
+    
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+            // Recarga la página
+            location.reload();
+        }   
+    </script>
+    
+</body>
+
+</html>

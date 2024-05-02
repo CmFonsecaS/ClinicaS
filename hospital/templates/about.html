@@ -1,0 +1,21 @@
+{% include 'include.html' %}
+{% include 'navbar.html' %}
+{% block body %}
+{% load static %}
+
+
+<style>
+    body {
+        background-image: url("{% static 'img/MainClinica.png' %}");
+        background-size: cover; 
+        background-position: center;
+            }
+</style>
+<h1 class="text-center">SOBRE NOSOTROS</h1>
+<p class="text-center" id="about-p">Somos Clínica Salud, el principal centro de atención ambulatoria en Chile en la ciudad de Santiago.</p>
+<p class="text-center" id="about-p1">Buscamos, a través de un modelo integral de salud, convertirnos en el principal aliado de los chilenos, acompañándolos durante todas las etapas de su vida. Queremos cuidarlos y apoyarlos, no solamente cuando están enfermos y requieren cuidados de salud, sino que también cuando están sanos, desarrollando innovadoras iniciativas centradas en la prevención de enfermedades y en la promoción de hábitos de vida saludables.</p>
+<p class="text-center" id="about-p-1">Desde nuestros inicios, hemos ido cumpliendo nuestro objetivo: acercar la atención de salud de calidad, especializada, a más familias del país. Por eso, contamos con especialidades en modalidad presencial y en Telemedicina, nuestro centro está ubicado en una zona geográfica de fácil acceso, para brindar atenciones médicas accesibles y oportunas.</p>
+<br>
+<p class="text-center" id="about-p-1">¡Clínica Salud: Junto a ti y a tu salud!</p>
+<div class="scroll-top-wrapper"><span class="scroll-top-inner"><i class="fa fa-arrow-circle-up"></i></span></div>
+{% endblock %}

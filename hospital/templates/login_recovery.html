@@ -1,0 +1,130 @@
+{% include 'include.html' %}
+{% include 'navbar.html' %}
+{% block body %}
+{% load static %}
+
+
+
+<style>
+    .eye-icon {
+        background-color: transparent;
+        border: none;
+    }
+</style>
+
+<div class="login-dark" style="background-image: url(&quot;{% static 'img/star-sky.jpg' %}&quot;);">
+    <form method="post">
+        {% csrf_token %}
+        <h2 class="sr-only">Password Recovery</h2>
+        <div class="illustration"><i class="icon ion-ios-locked-outline"></i></div>
+        
+        <!-- Campo de correo electrónico -->
+        <div class="form-group">
+            <input class="form-control" type="email" name="email" placeholder="Email">
+        </div>
+        
+        <!-- Campo de nueva contraseña -->
+        <div class="form-group">
+            <div class="input-group">
+                <input id="password-input1" class="form-control" type="password" name="new_password1" placeholder="New Password">
+                <div class="input-group-append">
+                    <span class="input-group-text eye-icon">
+                        <i id="toggle-password1" class="fa fa-eye" aria-hidden="true"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Campo de repetir contraseña -->
+        <div class="form-group">
+            <div class="input-group">
+                <input id="password-input2" class="form-control" type="password" name="new_password2" placeholder="Repeat Password">
+                <div class="input-group-append">
+                    <span class="input-group-text eye-icon">
+                        <i id="toggle-password2" class="fa fa-eye" aria-hidden="true"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Botón de enviar -->
+        <div class="form-group">
+            <button class="btn btn-primary btn-block" type="submit">Recuperar Contraseña</button>
+        </div>
+        
+        <!-- Enlace de volver al inicio de sesión -->
+        <div class="form-group">
+            <a class="btn btn-primary btn-block" href="{% url 'loginpage' %}">Volver al inicio de sesión</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('toggle-password1').addEventListener('click', function() {
+        var passwordInput = document.getElementById('password-input1');
+        var icon = document.getElementById('toggle-password1');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+    
+    document.getElementById('toggle-password2').addEventListener('click', function() {
+        var passwordInput = document.getElementById('password-input2');
+        var icon = document.getElementById('toggle-password2');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+    
+    // AJAX para manejar la recuperación de contraseña
+    $(document).ready(function() {
+        // Al hacer clic en el botón "Recuperar contraseña"
+        $('#recoverPasswordBtn').on('click', function() {
+            // Deshabilitar el botón para evitar clics múltiples
+            $(this).prop('disabled', true);
+            // Obtener el email del paciente para enviar la solicitud de recuperación
+            var email = $('#emailInput').val().trim();
+            // Validar que se haya proporcionado un email
+            if (email === '') {
+                alert('Por favor, ingrese su dirección de correo electrónico.');
+                $(this).prop('disabled', false);
+                return;
+            }
+            // Enviar la solicitud de recuperación mediante una solicitud AJAX
+            $.ajax({
+                url: '{% url "login_recovery" %}',
+                type: 'POST',
+                data: { 'email': email },
+                success: function(data) {
+                    alert('Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.');
+                    // Limpiar el campo de email después de enviar la solicitud
+                    $('#emailInput').val('');
+                    // Habilitar nuevamente el botón de recuperar contraseña
+                    $('#recoverPasswordBtn').prop('disabled', false);
+                },
+                error: function(error) {
+                    console.log(error);
+                    alert('Ha ocurrido un error al enviar la solicitud. Por favor, inténtalo de nuevo más tarde.');
+                    // Habilitar nuevamente el botón de recuperar contraseña en caso de error
+                    $('#recoverPasswordBtn').prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

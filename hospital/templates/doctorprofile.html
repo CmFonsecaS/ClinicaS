@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% include 'include.html' %}
+    {% load static %}
+</head>
+
+<body>
+    
+    <div id="wrapper">
+        {% include 'doctor_sidenav.html' %}
+        <div class="page-content-wrapper">
+            <div class="container-fluid">
+                <a class="btn btn-link" role="button" id="menu-toggle" href="#menu-toggle"><i class="fa fa-bars"></i></a>
+                <div class="row register-form">
+                    <div class="col-md-8 offset-md-2">
+                        <form id="editProfileForm" class="custom-form" style="margin-top: 0px;">
+                            {% csrf_token %}
+                            <h1>Your Profile</h1>
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="name-input-field">Nombre </label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="text" name="nombre" value="{{ doctor_details.nombre }}" readonly>
+                                </div>
+                            </div>
+                            <!-- Otros campos del formulario aquí... -->
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="email-input-field">Email </label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="email" value="{{ doctor_details.email }}" readonly>
+                                </div>
+                            </div>
+                            <!-- Otros campos del formulario aquí... -->
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="dropdown-input-field">Género</label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <select class="form-control" name="sexo" disabled>
+                                        <option value="M" {% if doctor_details.sexo == "M" %} selected {% endif %}>Male</option>
+                                        <option value="F" {% if doctor_details.sexo == "F" %} selected {% endif %}>Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- Otros campos del formulario aquí... -->
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="name-input-field">Teléfono</label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="text" name="telefono" value="{{ doctor_details.telefono }}" readonly>
+                                </div>
+                            </div>
+                            <!-- Otros campos del formulario aquí... -->
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="name-input-field">Dirección</label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <textarea class="form-control" name="direccion" readonly>{{ doctor_details.direccion }}</textarea>
+                                </div>
+                            </div>
+                            <!-- Otros campos del formulario aquí... -->
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="name-input-field">Fecha de nacimiento</label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="date" name="fechanac" value="{{ doctor_details.fechanac|date:'Y-m-d' }}" readonly>
+                                </div>
+                            </div>
+                            <!-- Campo de contraseña -->
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="name-input-field">Password</label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="text" name="password" value="{{ doctor_details.password }}" readonly>
+                                    <input type="hidden" name="password_original" value="{{ doctor_details.password }}">
+                                </div>
+                            </div>
+                            <!-- Campo de especialidad -->
+                            <div class="form-row form-group">
+                                <div class="col-sm-4 label-column">
+                                    <label class="col-form-label" for="name-input-field">Especialidad</label>
+                                </div>
+                                <div class="col-sm-6 input-column">
+                                    <input class="form-control" type="text" name="especialidad" value="{{ doctor_details.especialidad }}" readonly>
+                                </div>
+                            </div>
+                            <!-- Botón para modificar los datos -->
+                            <button type="button" id="editDataBtn" class="btn btn-primary">Modificar datos</button>
+                            <!-- Botón para guardar los cambios -->
+                            <button type="button" id="saveChangesBtn" class="btn btn-primary" style="display: none;">Guardar cambios</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="scroll-top-wrapper"><span class="scroll-top-inner"><i class="fa fa-arrow-circle-up"></i></span></div>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/back-to-top-scroll.js' %}"></script>
+    <script src="{% static 'js/Bold-BS4-Animated-Back-To-Top.js' %}"></script>
+    <script src="{% static 'js/bs-init.js' %}"></script>
+    <script src="{% static 'js/Sidebar-Menu.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            // Al hacer clic en el botón "Modificar datos"
+            $('#editDataBtn').on('click', function () {
+                // Habilitar la edición de todos los campos
+                $('#editProfileForm input, #editProfileForm textarea, #editProfileForm select').prop('readonly', false).prop('disabled', false);
+                // Mostrar el botón "Guardar cambios" y ocultar el botón "Modificar datos"
+                $('#saveChangesBtn').show();
+                $(this).hide();
+            });
+        
+            // Al hacer clic en el botón "Guardar cambios"
+            $('#saveChangesBtn').on('click', function () {
+                // Deshabilitar la edición de todos los campos
+                $('#editProfileForm input, #editProfileForm textarea, #editProfileForm select').prop('readonly', true).prop('disabled', true);
+                // Obtener el token CSRF del formulario
+                var csrfToken = $('#editProfileForm input[name="csrfmiddlewaretoken"]').val();
+                // Crear un objeto para almacenar los datos a enviar
+                var formData = {};
+                // Obtener los campos que han cambiado y agregarlos al objeto formData
+                $('#editProfileForm input[name], #editProfileForm select[name], #editProfileForm textarea[name]').each(function () {
+                    var fieldName = $(this).attr('name');
+                    var fieldValue = $(this).val();
+                    // Agregar el campo al objeto formData solo si su valor ha cambiado
+                    if (fieldValue !== $(this).attr('value')) {
+                        formData[fieldName] = fieldValue;
+                    }
+                });
+                // Enviar los datos mediante una solicitud AJAX
+                $.ajax({
+                    url: '{% url "doctorprofile" %}',
+                    type: 'POST',
+                    // Incluir el token CSRF en los encabezados de la solicitud
+                    headers: { "X-CSRFToken": csrfToken },
+                    data: formData,
+                    success: function (data) {
+                        // Actualizar el valor del campo de contraseña si se ha modificado
+                        var newPassword = $('#editProfileForm input[name="password"]').val();
+                        if (newPassword !== $('#editProfileForm input[name="password_original"]').val()) {
+                            $('#editProfileForm input[name="password_original"]').val(newPassword);
+                        }
+                        // Actualizar el valor del campo de fecha después de guardar los cambios
+                        var newDate = $('#editProfileForm input[name="fechanac"]').val();
+                        $('#editProfileForm input[name="fechanac"]').attr('value', newDate);
+                        // Cambiar el texto del botón a "Modificar datos"
+                        $('#editDataBtn').text('Modificar datos').show();
+                        $('#saveChangesBtn').hide();
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+        
+
+    </script>
+</body>
+
+</html>

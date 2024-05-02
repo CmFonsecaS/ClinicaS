@@ -1,0 +1,68 @@
+{% include 'include.html' %}
+{% include 'navbar.html' %}
+{% block body %}
+{% load static %}
+
+
+<style>
+    body {
+        background-image: url("{% static 'img/MainClinica.png' %}");
+        background-size: cover; 
+        background-position: center;
+            }
+</style>
+
+
+<section class="general-area-home">
+    <h1>Agenda con uno de nuestros doctores desde cualquier lugar!</h1>
+    <h3>Crea una cuenta, guarda tu perfil y agenda tu cita</h3>
+    <div class="row" id="row1">
+        <div class="col offset-lg-0">
+            <br>
+            <a class="btn btn-primary" href="{% url 'createaccountpage' %}">Crear Cuenta</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p class="text-center">Este sitio web te permite programar una cita con el médico respectivo con quien deseas consultar, puedes ver las citas antiguas, ver la prescripción, ver los informes. <a data-bs-hover-animate="flash" href="#">Para más detalles..</a></p>
+        </div>
+    </div>
+
+    <!-- Agregar el tipo de cambio obtenido de la API -->
+    
+    <div style="position: fixed; bottom: 10px; right: 10px; background-color: #007BFF; color: white; width: 200px; padding: 5px; border: 1px solid black; z-index: 9999;">
+        <!-- Título -->
+        <h5 style="margin-bottom: 5px; font-size: 20px;">Cambio del día</h5>
+        
+        <!-- Contenido de la API aquí -->
+        {% if exchange_data_usd_to_clp %}
+        <p style="font-size: 18px;">USD a CLP: {{ exchange_data_usd_to_clp|floatformat:"2" }}</p>
+        {% else %}
+        <p style="font-size: 18px;">No se pudo obtener el tipo de cambio de USD a CLP</p>
+        {% endif %}
+    
+        {% if exchange_data_eur_to_clp %}
+        <p style="font-size: 18px;">EUR a CLP: {{ exchange_data_eur_to_clp|floatformat:"2" }}</p>
+        {% else %}
+        <p style="font-size: 18px;">No se pudo obtener el tipo de cambio de EUR a CLP</p>
+        {% endif %}
+    
+        {% if exchange_data_gbp_to_clp %}
+        <p style="font-size: 18px;">GBP a CLP: {{ exchange_data_gbp_to_clp|floatformat:"2" }}</p>
+        {% else %}
+        <p style="font-size: 18px;">No se pudo obtener el tipo de cambio de GBP a CLP</p>
+        {% endif %}
+    </div>
+
+       <!-- Contenido de la API de World Clock -->
+    <div style="position: fixed; bottom: 10px; left: 10px; background-color: #007BFF; color: white; width: 200px; padding: 5px; border: 1px solid black; z-index: 9999;">
+    <!-- Título -->
+    <h5 style="margin-bottom: 5px; font-size: 20px;">Hora Actual</h5>
+    
+    <!-- Contenido de la API aquí -->
+    <p style="font-size: 18px;">Fecha y Hora: {{ world_clock_data.currentDateTime }}</p>
+    
+</div>
+</section>
+
+{% endblock %}
