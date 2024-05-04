@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password
 
 # Create your models here.
 
@@ -12,6 +13,7 @@ class Pacientes(models.Model):
     fechanac = models.DateField()
     gruposanguineo = models.CharField(max_length=5)
     
+
     def __str__(self):
         return self.nombre
     

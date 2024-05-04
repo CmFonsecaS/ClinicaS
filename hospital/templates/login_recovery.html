@@ -50,7 +50,7 @@
         
         <!-- Botón de enviar -->
         <div class="form-group">
-            <button class="btn btn-primary btn-block" type="submit">Recuperar Contraseña</button>
+            <button class="btn btn-primary btn-block" type="submit" onclick="return validarFormulario()">Recuperar Contraseña</button>
         </div>
         
         <!-- Enlace de volver al inicio de sesión -->
@@ -59,6 +59,54 @@
         </div>
     </form>
 </div>
+
+<script type="text/javascript">
+    function validarFormulario() {
+        var password1 = document.getElementById("password-input1").value;
+        var password2 = document.getElementById("password-input2").value;
+        
+        // Validar longitud de contraseña
+        if (password1.length < 8 || password1.length > 16) {
+            alert("La contraseña debe tener entre 8 y 16 caracteres");
+            return false;
+        }
+        
+        // Validar que ambas contraseñas coincidan
+        if (password1 !== password2) {
+            alert("Las contraseñas no coinciden");
+            return false;
+        }
+        
+        // Validar al menos un número
+        if (!/\d/.test(password1)) {
+            alert("La contraseña debe contener al menos un número");
+            return false;
+        }
+        
+        // Validar al menos una mayúscula
+        if (!/[A-Z]/.test(password1)) {
+            alert("La contraseña debe contener al menos una letra mayúscula");
+            return false;
+        }
+        
+        // Validar al menos una minúscula
+        if (!/[a-z]/.test(password1)) {
+            alert("La contraseña debe contener al menos una letra minúscula");
+            return false;
+        }
+        
+        // Validar al menos un carácter especial
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password1)) {
+            alert("La contraseña debe contener al menos un carácter especial");
+            return false;
+        }
+        
+        // Si todas las validaciones son exitosas, enviar el formulario
+        return true;
+    }
+</script>
+
+
 
 <script>
     document.getElementById('toggle-password1').addEventListener('click', function() {
