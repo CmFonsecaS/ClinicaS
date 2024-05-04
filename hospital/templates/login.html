@@ -3,6 +3,17 @@
 {% block body %}
 {% load static %}
 
+<script>
+   
+
+    // Esta función cerrará el mensaje de error cuando el usuario haga clic en cualquier parte de la pantalla
+    document.addEventListener('click', function(e) {
+        var alert = document.querySelector('.alert');
+        if(alert) {
+            alert.remove();
+        }
+    });
+</script>
 
 <div class="login-dark" style="background-image: url(&quot;{% static 'img/star-sky.jpg' %}&quot;);">
 
@@ -11,6 +22,15 @@
         {% csrf_token %}
         <h2 class="sr-only">Login Form</h2>
         <div class="illustration"><i class="icon ion-ios-locked-outline"></i></div>
+<!-- Aquí se mostrará el mensaje de error -->
+{% if messages %}
+{% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+{% endif %}
+
         <div class="form-group"><input class="form-control" type="email" name="email" placeholder="Email"></div>
         <div class="form-group"><input class="form-control" type="password" name="password" placeholder="Password"></div>
         <div class="form-group"><button class="btn btn-primary btn-block" type="submit">Entrar</button></div>

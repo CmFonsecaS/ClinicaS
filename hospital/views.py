@@ -108,42 +108,68 @@ def homepage(request):
 def aboutpage(request):
 	return render(request, 'about.html')
 
-
 def createaccountpage(request):
-    d = {}
     error = ""
-    user = "none"
+    success = False  # Inicialmente el registro no ha sido exitoso
     if request.method == 'POST':
-        nombre = request.POST['nombre']
-        email = request.POST['email']
-        password = request.POST['password']
-        repeatpassword = request.POST['repeatpassword']
-        sexo = request.POST['sexo']
-        telefono = request.POST['telefono']
-        direccion = request.POST['direccion']
-        fechanac = request.POST['fechanac']
-        gruposanguineo = request.POST['gruposanguineo']
+        nombre = request.POST.get('nombre')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        repeatpassword = request.POST.get('repeatpassword')
+        sexo = request.POST.get('sexo')
+        telefono = request.POST.get('telefono')
+        direccion = request.POST.get('direccion')
+        fechanac = request.POST.get('fechanac')
+        gruposanguineo = request.POST.get('gruposanguineo')
 
         try:
-            if password == repeatpassword:
-                Pacientes.objects.create(nombre=nombre, email=email, sexo=sexo, telefono=telefono,
-                                         direccion=direccion, fechanac=fechanac, gruposanguineo=gruposanguineo)
-                user = User.objects.create_user(
-                    first_name=nombre, email=email, password=password, username=email)
-                pat_group = Group.objects.get(name='Pacientes')
-                pat_group.user_set.add(user)
-                d['error'] = "no"
-            else:
-                d['error'] = "yes"
-        except Exception as e:
-            d['error'] = "yes"
-            # Aquí puedes imprimir o registrar la excepción si es necesario
-            print(e)
+            # Validar la longitud de la contraseña
+            if len(password) < 8 or len(password) > 16:
+                raise ValueError("La contraseña debe tener entre 8 y 16 caracteres")
 
-    return render(request, 'createaccount.html', d)
+            # Validar que las contraseñas coincidan
+            if password != repeatpassword:
+                raise ValueError("Las contraseñas no coinciden")
+
+            # Crear el objeto Paciente y guardarlo en la base de datos
+            paciente = Pacientes(nombre=nombre, email=email, password=password, sexo=sexo,
+                                 telefono=telefono, direccion=direccion, fechanac=fechanac,
+                                 gruposanguineo=gruposanguineo)
+            paciente.save()
+
+            success = True  # Marcar el registro como exitoso
+            return render(request, 'createaccount.html', {'success': success})  # Renderizar con éxito
+
+        except Exception as e:
+            error = str(e)
+
+    return render(request, 'createaccount.html', {'error': error, 'success': success})
+
 
 def login_recovery(request):
-	    return render(request, 'login_recovery.html')
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        new_password1 = request.POST.get('new_password1')
+        new_password2 = request.POST.get('new_password2')
+
+        # Validar que las contraseñas coincidan
+        if new_password1 != new_password2:
+            # Devolver un mensaje de error si las contraseñas no coinciden
+            return render(request, 'login_recovery.html', {'error_message': 'Las contraseñas no coinciden'})
+
+        # Cambiar la contraseña del usuario
+        user = User.objects.filter(email=email).first()
+        if user:
+            user.set_password(new_password1)
+            user.save()
+            # Redirigir a una página de éxito o mostrar un mensaje de éxito
+            return render(request, 'login_recovery.html', {'success_message': 'Contraseña cambiada con éxito'})
+        else:
+            # Devolver un mensaje de error si el usuario no existe
+            return render(request, 'login_recovery.html', {'error_message': 'El usuario no existe'})
+
+    # Renderizar el formulario de recuperación de contraseña
+    return render(request, 'login_recovery.html')
 
 def loginpage(request):
     if request.method == 'POST':

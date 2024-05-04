@@ -1,6 +1,5 @@
 {% include 'include.html' %}
 {% include 'navbar.html' %}
-{% block body %}
 {% load static %}
 
 <style>
@@ -8,14 +7,19 @@
         background-image: url("{% static 'img/MainClinica.png' %}");
         background-size: cover; 
         background-position: center;
-            }
+    }
 </style>
 
 <div class="row register-form">
     <div class="col-md-8 offset-md-2">
-        <form class="custom-form" style="margin-top: 0px;" method="post">
+        <form class="custom-form" style="margin-top: 0px;" method="post" onsubmit="return validarFormulario()">
             {% csrf_token %}
             <h1>Formulario de Registro</h1>
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
                     <label class="col-form-label" for="name-input-field">Nombre</label>
@@ -26,7 +30,7 @@
             </div>
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
-                    <label class="col-form-label" for="email-input-field">Email </label>
+                    <label class="col-form-label" for="email-input-field">Email</label>
                 </div>
                 <div class="col-sm-6 input-column">
                     <input class="form-control" type="email" name="email" required="">
@@ -34,15 +38,15 @@
             </div>
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
-                    <label class="col-form-label" for="pawssword-input-field">Password </label>
+                    <label class="col-form-label" for="password">Password</label>
                 </div>
                 <div class="col-sm-6 input-column">
-                    <input class="form-control" type="password" name="password" required="">
+                    <input id="password" class="form-control" type="password" name="password" required="">
                 </div>
             </div>
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
-                    <label class="col-form-label" for="repeat-pawssword-input-field">Repita su Password </label>
+                    <label class="col-form-label" for="repeatpassword">Repita su Password</label>
                 </div>
                 <div class="col-sm-6 input-column">
                     <input class="form-control" type="password" name="repeatpassword" required="">
@@ -50,20 +54,19 @@
             </div>
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
-                    <label class="col-form-label" for="dropdown-input-field" >Género</label>
+                    <label class="col-form-label" for="dropdown-input-field">Género</label>
                 </div>
                 <div class="col-sm-6 input-column">
                     <select class="form-control" name="sexo" required="">
                         <option value="" disabled selected>Selecciona tu sexo</option>
-                         <option value="Male">Masculino</option>
-                            <option value="Female">Femenino</option>
-                        </optgroup>
+                        <option value="Male">Masculino</option>
+                        <option value="Female">Femenino</option>
                     </select>
                 </div>
             </div>
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
-                    <label class="col-form-label" for="name-input-field">Teléfono</label>
+                    <label class="col-form-label" for="telefono-input-field">Teléfono</label>
                 </div>
                 <div class="col-sm-6 input-column">
                     <input class="form-control" type="tel" name="telefono" required="">
@@ -71,7 +74,7 @@
             </div>
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
-                    <label class="col-form-label" for="name-input-field">Dirección</label>
+                    <label class="col-form-label" for="direccion-input-field">Dirección</label>
                 </div>
                 <div class="col-sm-6 input-column">
                     <textarea class="form-control" name="direccion" required=""></textarea>
@@ -79,7 +82,7 @@
             </div>
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
-                    <label class="col-form-label" for="name-input-field">Fecha de nacimiento</label>
+                    <label class="col-form-label" for="fechanac-input-field">Fecha de nacimiento</label>
                 </div>
                 <div class="col-sm-6 input-column">
                     <input class="form-control" type="date" name="fechanac" required="">
@@ -87,7 +90,7 @@
             </div>
             <div class="form-row form-group">
                 <div class="col-sm-4 label-column">
-                    <label class="col-form-label" for="name-input-field">Tipo de Sangre</label>
+                    <label class="col-form-label" for="gruposanguineo-input-field">Tipo de Sangre</label>
                 </div>
                 <div class="col-sm-6 input-column">
                     <select class="form-control" name="gruposanguineo" required="">
@@ -100,7 +103,6 @@
                         <option value="B-">B-</option>
                         <option value="AB+">AB+</option>
                         <option value="AB-">AB-</option>
-                        </optgroup>
                     </select>
                 </div>
             </div>
@@ -108,24 +110,52 @@
                 <input type="checkbox" class="form-check-input" id="acceptTerms" required="">
                 <label class="form-check-label" for="acceptTerms">He leído y acepto los términos y condiciones</label>
             </div>
-            
-            <button class="btn btn-primary submit-button" type="submit">Crear Cuenta</button>
-            
+            <button class="btn btn-primary submit-button" type="submit" onclick="return validarFormulario()">Crear Cuenta</button>
         </form>
     </div>
 </div>
 <div class="scroll-top-wrapper"><span class="scroll-top-inner"><i class="fa fa-arrow-circle-up"></i></span></div>
 
-{% if error == "no" %}
-<script type="text/javascript">
-    alert('Paciente guardado satisfactoriamente ....');
-    window.location = "{% url 'loginpage' %}";
-</script>
-{% endif %}
 
-{% if error == "yes" %}
 <script type="text/javascript">
-    alert('¡El correo electrónico ya existe!');
+    function validarFormulario() {
+        var password = document.getElementById("password").value;
+        // Validar longitud
+        if (password.length < 8 || password.length > 16) {
+            alert("La contraseña debe tener entre 8 y 16 caracteres");
+            return false; // Evitar el envío del formulario
+        }
+        // Validar al menos un número
+        if (!/\d/.test(password)) {
+            alert("La contraseña debe contener al menos un número");
+            return false; // Evitar el envío del formulario
+        }
+        // Validar al menos una mayúscula
+        if (!/[A-Z]/.test(password)) {
+            alert("La contraseña debe contener al menos una letra mayúscula");
+            return false; // Evitar el envío del formulario
+        }
+        // Validar al menos una minúscula
+        if (!/[a-z]/.test(password)) {
+            alert("La contraseña debe contener al menos una letra minúscula");
+            return false; // Evitar el envío del formulario
+        }
+        // Validar al menos un carácter especial
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            alert("La contraseña debe contener al menos un carácter especial");
+            return false; // Evitar el envío del formulario
+        }
+        // Si todas las validaciones son exitosas, enviar el formulario
+        return true;
+    }
+
+    
+</script>
+
+{% if success %}
+<script type="text/javascript">
+    window.onload = function() {
+        alert("¡El usuario se creó correctamente!");
+    }
 </script>
 {% endif %}
-{% endblock %}
