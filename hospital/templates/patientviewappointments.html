@@ -8,7 +8,8 @@
             background-image: url("{% static 'img/MainClinica.png' %}");
             background-size: cover; 
             background-position: center;
-                }
+            
+        }
     </style>
 </head>
 <body>
@@ -24,33 +25,36 @@
                     <ul class="collapsible popout text-center" data-collapsible="accordion">
                         <li class="card">
                             <div class="card-header collapsible-header">
-                                <h5 style="color:blue;"><a><i class="fa fa-calendar-check-o"></i>  {{ cita.pacientenombre }} appointment with {{ cita.doctornombre }} on {{ cita.citamedicafecha }}</a></h5>
+                                <h5 style="color:blue;"><a><i class="fa fa-calendar-check-o"></i> Estimad@ {{ cita.pacientenombre }} tiene cita agendada con Dr. {{ cita.doctornombre }} con fecha {{ cita.citamedicafecha }}</a></h5>
                             </div>
                             <div class="card-body collapsible-body">
                                 <table align="center" class="card-text" style="font-size: 19px;">
                                     <tr>
-                                        <td>Doctor Name:</td>
+                                        <td>Nombre Doctor:</td>
                                         <td>{{ cita.doctornombre }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Patient Name:</td>
+                                        <td>Nombre Paciente:</td>
                                         <td>{{ cita.pacientenombre }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Appointment Date:</td>
+                                        <td>Día de la Cita:</td>
                                         <td>{{ cita.citamedicafecha }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Appointment Time:</td>
+                                        <td>Hora de la Cita:</td>
                                         <td>{{ cita.citamedicahora }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Symptoms:</td>
+                                        <td>Síntomas:</td>
                                         <td>{{ cita.sintomas }}</td>
                                     </tr> 
                                     <tr>
-                                        <td>Delete Appointment:</td>
-                                        <td><a href="#" onclick="return confirm('Are you sure you want to delete?')" class="btn btn-danger">Delete</a></td>
+                                        <td>Acciones:</td>
+                                        <td>
+                                            <button class="btn btn-danger cancelar-cita" data-cita-id="{{ cita.id }}">Cancelar</button>
+                                            <button class="btn btn-primary editar-cita" data-cita-id="{{ cita.id }}">Editar</button>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
@@ -62,11 +66,163 @@
         </div>
     </div>
     <div class="scroll-top-wrapper"><span class="scroll-top-inner"><i class="fa fa-arrow-circle-up"></i></span></div>
-<script src="{% static 'js/jquery.min.js' %}"></script>
-<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
-<script src="{% static 'js/back-to-top-scroll.js' %}"></script>
-<script src="{% static 'js/Bold-BS4-Animated-Back-To-Top.js' %}"></script>
-<script src="{% static 'js/bs-init.js' %}"></script>
-<script src="{% static 'js/Sidebar-Menu.js' %}"></script>
+
+<!-- Modal para editar cita -->
+<div class="modal fade" id="editarCitaModal" tabindex="-1" role="dialog" aria-labelledby="editarCitaModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarCitaModalLabel">Editar Cita Médica</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editarCitaForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="editarDoctornombre">Nombre Doctor:</label>
+                        <select class="form-control" id="editarDoctornombre" name="doctornombre" style="height: auto; line-height: normal;" required>
+                            <option value="" selected disabled>Seleccione doctor</option>
+                            {% for doctor in doctores %}
+                                <option value="{{ doctor.nombre }}">{{ doctor.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editarPacientenombre">Nombre Paciente:</label>
+                        <input type="text" class="form-control" id="editarPacientenombre" name="pacientenombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editarCitamedicafecha">Fecha de la Cita:</label>
+                        <input type="date" class="form-control" id="editarCitamedicafecha" name="citamedicafecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editarCitamedicahora">Hora de la Cita:</label>
+                        <input type="time" class="form-control" id="editarCitamedicahora" name="citamedicahora" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editarSintomas">Síntomas:</label>
+                        <input type="text" class="form-control" id="editarSintomas" name="sintomas" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="guardarCambiosBtn">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/back-to-top-scroll.js' %}"></script>
+    <script src="{% static 'js/Bold-BS4-Animated-Back-To-Top.js' %}"></script>
+    <script src="{% static 'js/bs-init.js' %}"></script>
+    <script src="{% static 'js/Sidebar-Menu.js' %}"></script>
+
+    <script>
+        // Función para cancelar la cita
+        document.addEventListener('DOMContentLoaded', function() {
+            var cancelButtons = document.querySelectorAll('.cancelar-cita');
+            cancelButtons.forEach(function(button) {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    if (confirm('¿Está seguro que desea cancelar la cita?')) {
+                        var citaId = this.getAttribute('data-cita-id');
+                        if (citaId) {
+                            fetch(`/api/v1/reservamedica/${citaId}/`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                }
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    location.reload();
+                                } else {
+                                    console.error('Error al cancelar la cita');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error al cancelar la cita:', error);
+                            });
+                        } else {
+                            console.error('ID de cita no encontrado');
+                        }
+                    }
+                });
+            });
+    
+            // Función para editar la cita
+            var editButtons = document.querySelectorAll('.editar-cita');
+            editButtons.forEach(function(button) {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    var citaId = this.getAttribute('data-cita-id');
+                    if (citaId) {
+                        // Realizar una solicitud GET para obtener los datos de la cita
+                        fetch(`/api/v1/reservamedica/${citaId}/`, {
+                            method: 'GET'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Almacena los datos originales de la cita
+                            citaOriginal = data;
+    
+                            // Llenar los campos del formulario de edición con los datos de la cita
+                            document.getElementById('editarDoctornombre').value = data.doctornombre;
+                            document.getElementById('editarPacientenombre').value = data.pacientenombre;
+                            document.getElementById('editarCitamedicafecha').value = data.citamedicafecha;
+                            document.getElementById('editarCitamedicahora').value = data.citamedicahora;
+                            document.getElementById('editarSintomas').value = data.sintomas;
+    
+                            // Mostrar el modal de edición de cita
+                            $('#editarCitaModal').modal('show');
+                        })
+                        .catch(error => console.error('Error al obtener los datos de la cita:', error));
+                    } else {
+                        console.error('ID de cita no encontrado');
+                    }
+                });
+            });
+    
+            // Función para guardar los cambios en la cita
+            document.getElementById('guardarCambiosBtn').addEventListener('click', function() {
+                // Obtiene los datos del formulario
+                var formData = new FormData(document.getElementById('editarCitaForm'));
+                // Agrega los campos no modificados de la cita original al formulario
+                Object.keys(citaOriginal).forEach(function(key) {
+                    if (!formData.has(key) && key !== 'prescripcion') { // Excluir el campo 'prescripcion'
+                        formData.append(key, citaOriginal[key]);
+                    }
+                });
+                // Obtiene el ID de la cita
+                var citaId = document.querySelector('.editar-cita').getAttribute('data-cita-id');
+    
+                // Realiza la solicitud PUT para guardar los cambios
+                fetch(`/api/v1/reservamedica/${citaId}/`, {
+                    method: 'PUT',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Si la solicitud se realizó correctamente, recarga la página para mostrar los cambios actualizados
+                        location.reload();
+                    } else {
+                        console.error('Error al guardar los cambios en la cita');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al guardar los cambios en la cita:', error);
+                });
+            });
+        });
+    </script>
 </body>
 </html>

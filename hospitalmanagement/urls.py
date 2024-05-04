@@ -33,7 +33,7 @@ urlpatterns = [
     path('doctorprofile/', doctorprofile, name='doctorprofile'),
     path('doctorviewappointments/', doctorviewappointments, name='doctorviewappointments'),
     path('login_recovery/',login_recovery, name='login_recovery'),
-        
+    path('api/v1/', include('hospital.urls'))
 ]    
     
 

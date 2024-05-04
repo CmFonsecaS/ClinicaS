@@ -23,6 +23,7 @@
             z-index: 9999;
             padding: 20px;
             box-shadow: 0px 0px 10px 0px #000000;
+            display: none; /* Por defecto, el pop-up está oculto */
         }
         .popup__overlay {
             position: fixed;
@@ -113,7 +114,7 @@
                                     <textarea class="form-control" name="symptoms" required=""></textarea>
                                 </div>
                             </div>
-                            <button class="btn btn-light submit-button" type="submit" onclick="submitForm()" id="submit-button">Reserva y pago de Cita</button>
+                            <button class="btn btn-light submit-button" type="submit" id="submit-button">Reserva y pago de Cita</button>
                         </form>
                         {% if messages %}
                             {% for message in messages %}
@@ -129,10 +130,10 @@
     </div>
 
     <!-- Pop-up -->
-    <div id="popup" class="popup" style="display: none;">
-        <p>¡Reserva realizada con éxito!</p>
+    <div id="popup" class="popup">
+        <p>¡Reserva y pago realizado con éxito!</p>
         <div class="popup__button-container">
-            <button class="btn btn-primary popup__button" onclick="closePopup()">Cerrar</button>
+            <button class="btn btn-primary popup__button" onclick="closePopup()">Aceptar</button>
         </div>
     </div>
 
@@ -144,25 +145,26 @@
     <script src="{% static 'js/bs-init.js' %}"></script>
     <script src="{% static 'js/Sidebar-Menu.js' %}"></script>
     <script>
-        function submitForm() {
+        document.addEventListener("DOMContentLoaded", function() {
             var form = document.getElementById('appointment-form');
-            if (form.checkValidity()) {
-                // Envía el formulario al servidor
-                form.submit();
-                // Muestra el popup
-                document.getElementById("popup").style.display = "block";
-                // Deshabilita el botón de envío del formulario
-                document.getElementById("submit-button").disabled = true;
-            } else {
-                form.reportValidity();
-            }
-        }
-    
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity()) {
+                    // Muestra el pop-up
+                    document.getElementById("popup").style.display = "block";
+                    // Deshabilita el botón de envío del formulario
+                    document.getElementById("submit-button").disabled = true;
+                } else {
+                    form.reportValidity();
+                }
+                event.preventDefault(); // Evita que el formulario se envíe automáticamente
+            });
+        });
+
         function closePopup() {
             document.getElementById("popup").style.display = "none";
             // Recarga la página
             location.reload();
-        }   
+        }
     </script>
     
 </body>

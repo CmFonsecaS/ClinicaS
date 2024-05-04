@@ -42,16 +42,15 @@ class Recepcionista(models.Model):
 
 
 class Reservamedica(models.Model):
-	doctornombre = models.CharField(max_length=50)
-	doctoremail = models.EmailField(max_length=50)
-	pacientenombre = models.CharField(max_length=50)
-	pacienteemail = models.EmailField(max_length=50)
-	citamedicafecha = models.DateField(max_length=10)
-	citamedicahora= models.TimeField(max_length=10)
-	sintomas = models.CharField(max_length=100)
-	status = models.BooleanField()
-	prescripcion = models.CharField(max_length=200)
+    doctornombre = models.CharField(max_length=50)
+    doctoremail = models.EmailField(max_length=50)
+    pacientenombre = models.CharField(max_length=50)
+    pacienteemail = models.EmailField(max_length=50)
+    citamedicafecha = models.DateField(max_length=10)
+    citamedicahora = models.TimeField(max_length=10)
+    sintomas = models.CharField(max_length=100)
+    status = models.BooleanField()
 	
-	def __str__(self):
+def __str__(self):
 		return self.pacientenombre+" tienes una cita con"+self.doctornombre
 

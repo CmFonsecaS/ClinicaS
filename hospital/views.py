@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.models import User, Group
 from .models import *
 from django.contrib.auth import authenticate, logout, login
@@ -9,12 +9,15 @@ from django.contrib.auth.hashers import check_password, make_password
 import requests
 from django.http import JsonResponse
 import datetime
-from rest_framework import generics
-from .models import Pacientes, Doctores
-
+from rest_framework import viewsets
+from .models import Reservamedica, Pacientes
+from .serializer import ReservamedicaSerializer, PacientesSerializer
+from json.decoder import JSONDecodeError
+import json
 
 
 # Create your views here.
+
 
 def homepage(request):
     # Realizar las solicitudes a la API para obtener los tipos de cambio
@@ -32,17 +35,29 @@ def homepage(request):
         'x-rapidapi-host': "currency-exchange.p.rapidapi.com"
     }
 
-    # Obtener el tipo de cambio de USD a CLP
-    response_usd_to_clp = requests.get(url_usd_to_clp, headers=headers, params=querystring_usd_to_clp)
-    exchange_data_usd_to_clp = response_usd_to_clp.json() if response_usd_to_clp.status_code == 200 else None
+    try:
+        # Obtener el tipo de cambio de USD a CLP
+        response_usd_to_clp = requests.get(url_usd_to_clp, headers=headers, params=querystring_usd_to_clp)
+        exchange_data_usd_to_clp = response_usd_to_clp.json() if response_usd_to_clp.status_code == 200 else None
+    except Exception as e:
+        print("Error de decodificación JSON en USD a CLP:", e)
+        exchange_data_usd_to_clp = None
 
-    # Obtener el tipo de cambio de EUR a CLP
-    response_eur_to_clp = requests.get(url_eur_to_clp, headers=headers, params=querystring_eur_to_clp)
-    exchange_data_eur_to_clp = response_eur_to_clp.json() if response_eur_to_clp.status_code == 200 else None
+    try:
+        # Obtener el tipo de cambio de EUR a CLP
+        response_eur_to_clp = requests.get(url_eur_to_clp, headers=headers, params=querystring_eur_to_clp)
+        exchange_data_eur_to_clp = response_eur_to_clp.json() if response_eur_to_clp.status_code == 200 else None
+    except Exception as e:
+        print("Error de decodificación JSON en EUR a CLP:", e)
+        exchange_data_eur_to_clp = None
 
-    # Obtener el tipo de cambio de GBP a CLP
-    response_gbp_to_clp = requests.get(url_gbp_to_clp, headers=headers, params=querystring_gbp_to_clp)
-    exchange_data_gbp_to_clp = response_gbp_to_clp.json() if response_gbp_to_clp.status_code == 200 else None
+    try:
+        # Obtener el tipo de cambio de GBP a CLP
+        response_gbp_to_clp = requests.get(url_gbp_to_clp, headers=headers, params=querystring_gbp_to_clp)
+        exchange_data_gbp_to_clp = response_gbp_to_clp.json() if response_gbp_to_clp.status_code == 200 else None
+    except Exception as e:
+        print("Error de decodificación JSON en GBP a CLP:", e)
+        exchange_data_gbp_to_clp = None
 
     # Realizar la solicitud a la API de World Clock
     url_world_clock = "https://world-clock.p.rapidapi.com/json/est/now"
@@ -50,20 +65,30 @@ def homepage(request):
         "x-rapidapi-key": "41f470e399msh6bdef2065df4998p1d1699jsn19afd236e8dc",
         "x-rapidapi-host": "world-clock.p.rapidapi.com"
     }
-    response_world_clock = requests.get(url_world_clock, headers=headers_world_clock)
-    
-    # Verificar si la solicitud fue exitosa y si hay datos
-    if response_world_clock.status_code == 200:
-        world_clock_data = response_world_clock.json()
-        # Mapear las claves del diccionario de la API de World Clock a nombres más fáciles de usar
-        mapped_world_clock_data = {
-            "currentDateTime": world_clock_data.get("currentDateTime", ""),
-            "utcOffset": world_clock_data.get("utcOffset", ""),
-            "isDayLightSavingsTime": world_clock_data.get("isDayLightSavingsTime", ""),
-            "dayOfTheWeek": world_clock_data.get("dayOfTheWeek", ""),
-            "timeZoneName": world_clock_data.get("timeZoneName", "")
-        }
-    else:
+
+    try:
+        response_world_clock = requests.get(url_world_clock, headers=headers_world_clock)
+        # Verificar si la solicitud fue exitosa y si hay datos
+        if response_world_clock.status_code == 200:
+            world_clock_data = response_world_clock.json()
+            # Mapear las claves del diccionario de la API de World Clock a nombres más fáciles de usar
+            mapped_world_clock_data = {
+                "currentDateTime": world_clock_data.get("currentDateTime", ""),
+                "utcOffset": world_clock_data.get("utcOffset", ""),
+                "isDayLightSavingsTime": world_clock_data.get("isDayLightSavingsTime", ""),
+                "dayOfTheWeek": world_clock_data.get("dayOfTheWeek", ""),
+                "timeZoneName": world_clock_data.get("timeZoneName", "")
+            }
+        else:
+            mapped_world_clock_data = {
+                "currentDateTime": "N/A",
+                "utcOffset": "N/A",
+                "isDayLightSavingsTime": "N/A",
+                "dayOfTheWeek": "N/A",
+                "timeZoneName": "N/A"
+            }
+    except Exception as e:
+        print("Error al obtener la hora del mundo:", e)
         mapped_world_clock_data = {
             "currentDateTime": "N/A",
             "utcOffset": "N/A",
@@ -169,10 +194,8 @@ def loginpage(request):
 
     return render(request, 'login.html')
 
-
-    
-   
-       
+  
+      
 
 def patienthomepage(request):
     if request.user.is_authenticated:
@@ -184,9 +207,6 @@ def patienthomepage(request):
             return redirect('loginpage')
     else:
         return redirect('loginpage')
-
-
-
 
 
 def patientprofile(request):
@@ -250,7 +270,9 @@ def patientmakeappointments(request):
 def patientviewappointments(request):
     # Obtener todas las citas médicas
     citas = Reservamedica.objects.all()
-    return render(request, 'patientviewappointments.html', {'citas': citas})
+    # Consultar todos los doctores en la base de datos
+    doctores = Doctores.objects.all()
+    return render(request, 'patientviewappointments.html', {'citas': citas, 'doctores': doctores})
 
 def doctorhome(request):
     if request.user.is_authenticated:
@@ -297,3 +319,48 @@ def recuperar_password(request):
     return JsonResponse({'success': False, 'message': 'El método de solicitud no es válido.'})
 
 
+class ReservamedicaViewSet(viewsets.ModelViewSet):
+    queryset = Reservamedica.objects.all()
+    serializer_class = ReservamedicaSerializer
+
+class PacientesViewSet(viewsets.ModelViewSet):
+    queryset = Pacientes.objects.all()
+    serializer_class = PacientesSerializer
+
+
+def cancelar_cita(request, cita_id):
+    if request.method == 'DELETE':
+        # Obtener la cita médica
+        cita = get_object_or_404(Reservamedica, id=cita_id)
+        # Eliminar la cita médica
+        cita.delete()
+        # Devolver una respuesta JSON indicando éxito
+        return JsonResponse({'message': 'Cita cancelada exitosamente'}, status=200)
+    else:
+        # Devolver una respuesta JSON indicando error si el método de solicitud no es DELETE
+        return JsonResponse({'error': 'Método de solicitud no permitido'}, status=405)
+    
+ 
+
+def editar_cita(request, cita_id):
+    cita = get_object_or_404(Reservamedica, id=cita_id)
+    
+     # Consulta todos los doctores en la base de datos
+    doctores = Doctores.objects.all()
+
+    if request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            cita.doctornombre = data.get('doctornombre', cita.doctornombre)
+            cita.pacientenombre = data.get('pacientenombre', cita.pacientenombre)
+            cita.citamedicafecha = data.get('citamedicafecha', cita.citamedicafecha)
+            cita.citamedicahora = data.get('citamedicahora', cita.citamedicahora)
+            cita.sintomas = data.get('sintomas', cita.sintomas)
+            cita.save()
+            return JsonResponse({'message': 'Cita actualizada exitosamente'}, status=200)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Los datos recibidos no son válidos'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Método de solicitud no permitido'}, status=405)
