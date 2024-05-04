@@ -283,13 +283,21 @@ def doctorhome(request):
         else:
             messages.error(request, 'No se encontró un doctor con este correo electrónico.')
             return redirect('loginpage')
+    else:
+        return redirect('loginpage')
  
-
+ 
 def doctorprofile(request):
-	return render(request, 'doctorprofile.html')
+    doctor = Doctores.objects.get(email=request.user.email)
+    return render(request, 'doctorprofile.html', {'doctor_details': doctor})
 
 def doctorviewappointments(request):
-	return render(request, 'doctorviewappointments.html')
+    # Obtener todas las citas médicas
+    citas = Reservamedica.objects.all()
+    # Consultar todos los doctores en la base de datos
+    doctores = Doctores.objects.all()
+    return render(request, 'doctorviewappointments.html', {'citas': citas, 'doctores': doctores})
+	
 
 
 def recuperar_password(request):

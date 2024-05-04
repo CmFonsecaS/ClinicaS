@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include 'include.html' %}
+    {% load static %}
+    <style>
+        body {
+            background-image: url("{% static 'img/MainClinica.png' %}");
+            background-size: cover; 
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+    {% include 'adminnav.html' %}
+    <div id="wrapper">
+        {% include 'doctor_sidenav.html' %}
+        <div class="page-content-wrapper">
+            <div class="container-fluid">
+                <a class="btn btn-link" role="button" id="menu-toggle" href="#menu-toggle"><i class="fa fa-bars"></i></a>
+                <h2 class="text-center">Citas Médicas</h2>
+                <div class="text-center" role="tablist" id="accordion-1">
+                    {% for cita in citas %}
+                    <ul class="collapsible popout text-center" data-collapsible="accordion">
+                        <li class="card">
+                            <div class="card-header collapsible-header">
+                                <h5 style="color:blue;"><a><i class="fa fa-calendar-check-o"></i> Estimad@ Dr. {{ cita.doctornombre }}  tiene cita agendada con {{ cita.pacientenombre }} con fecha {{ cita.citamedicafecha }}</a></h5>
+                            </div>
+                            <div class="card-body collapsible-body">
+                                <table align="center" class="card-text" style="font-size: 19px;">
+                                    <tr>
+                                        <td>Nombre Doctor:</td>
+                                        <td>{{ cita.doctornombre }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Nombre Paciente:</td>
+                                        <td>{{ cita.pacientenombre }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Día de la Cita:</td>
+                                        <td>{{ cita.citamedicafecha }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hora de la Cita:</td>
+                                        <td>{{ cita.citamedicahora }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Síntomas:</td>
+                                        <td>{{ cita.sintomas }}</td>
+                                    </tr> 
+                                    <tr>
+                                        <td>Acciones:</td>
+                                        <td>
+                                            <button class="btn btn-danger cancelar-cita" data-cita-id="{{ cita.id }}">Cancelar</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </li>
+                    </ul>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="scroll-top-wrapper"><span class="scroll-top-inner"><i class="fa fa-arrow-circle-up"></i></span></div>
+
+    <!-- Modal de notificación -->
+    <div class="modal fade" id="notificacionModal" tabindex="-1" role="dialog" aria-labelledby="notificacionModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificacionModalLabel">Notificación</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>El paciente será notificado.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/back-to-top-scroll.js' %}"></script>
+    <script src="{% static 'js/Bold-BS4-Animated-Back-To-Top.js' %}"></script>
+    <script src="{% static 'js/bs-init.js' %}"></script>
+    <script src="{% static 'js/Sidebar-Menu.js' %}"></script>
+
+    <script>
+        // Función para cancelar la cita
+        document.addEventListener('DOMContentLoaded', function() {
+            var cancelButtons = document.querySelectorAll('.cancelar-cita');
+            cancelButtons.forEach(function(button) {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    if (confirm('¿Está seguro que desea cancelar la cita?')) {
+                        var citaId = this.getAttribute('data-cita-id');
+                        if (citaId) {
+                            fetch(`/api/v1/reservamedica/${citaId}/`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                }
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    $('#notificacionModal').modal('show'); // Mostrar el modal de notificación
+                                    location.reload(); // Recargar la página después de cerrar el modal
+                                } else {
+                                    console.error('Error al cancelar la cita');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error al cancelar la cita:', error);
+                            });
+                        } else {
+                            console.error('ID de cita no encontrado');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

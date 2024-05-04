@@ -4,6 +4,14 @@
 <head>
     {% include 'include.html' %}
     {% load static %}
+    
+<style>
+    body {
+        background-image: url("{% static 'img/MainClinica.png' %}");
+        background-size: cover; 
+        background-position: center;
+            }
+</style>
 </head>
 
 <body>
@@ -15,14 +23,14 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div>
-                            <h1 class="text-center">You are sucessfully logged in..{{ user.first_name }}</h1>
+                            <h1 class="text-center">Bienvenid@ a su Perfil Médico...{{ doctor_details.nombre }}</h1>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-{% include 'redirecthome.html' %}
+
 <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'js/back-to-top-scroll.js' %}"></script>

@@ -4,10 +4,19 @@
 <head>
     {% include 'include.html' %}
     {% load static %}
+    <style>
+        body {
+            background-image: url("{% static 'img/MainClinica.png' %}");
+            background-size: cover; 
+            background-position: center;
+                }
+    </style>
+
 </head>
 
+
 <body>
-    
+    {% include 'adminnav.html' %}
     <div id="wrapper">
         {% include 'doctor_sidenav.html' %}
         <div class="page-content-wrapper">
@@ -84,13 +93,22 @@
                                     <input type="hidden" name="password_original" value="{{ doctor_details.password }}">
                                 </div>
                             </div>
-                            <!-- Campo de especialidad -->
+                            <!-- Campo de gruposanguineo -->
                             <div class="form-row form-group">
                                 <div class="col-sm-4 label-column">
-                                    <label class="col-form-label" for="name-input-field">Especialidad</label>
+                                    <label class="col-form-label" for="name-input-field">Grupo Sanguíneo</label>
                                 </div>
                                 <div class="col-sm-6 input-column">
-                                    <input class="form-control" type="text" name="especialidad" value="{{ doctor_details.especialidad }}" readonly>
+                                    <select class="form-control" name="gruposanguineo" disabled>
+                                        <option value="A+" {% if doctor_details.gruposanguineo == "A+" %} selected {% endif %}>A+</option>
+                                        <option value="A-" {% if doctor_details.gruposanguineo == "A-" %} selected {% endif %}>A-</option>
+                                        <option value="B+" {% if doctor_details.gruposanguineo == "B+" %} selected {% endif %}>B+</option>
+                                        <option value="B-" {% if doctor_details.gruposanguineo == "B-" %} selected {% endif %}>B-</option>
+                                        <option value="AB+" {% if doctor_details.gruposanguineo == "AB+" %} selected {% endif %}>AB+</option>
+                                        <option value="AB-" {% if doctor_details.gruposanguineo == "AB-" %} selected {% endif %}>AB-</option>
+                                        <option value="O+" {% if doctor_details.gruposanguineo == "O+" %} selected {% endif %}>O+</option>
+                                        <option value="O-" {% if doctor_details.gruposanguineo == "O-" %} selected {% endif %}>O-</option>
+                                    </select>
                                 </div>
                             </div>
                             <!-- Botón para modificar los datos -->
