@@ -21,35 +21,37 @@
         {% include 'admin_include.html'%}
         <div class="page-content-wrapper">
             <div class="container-fluid"><a class="btn btn-link" role="button" id="menu-toggle" href="#menu-toggle"><i class="fa fa-bars" style="color: black;"></i></a>
-                <h2 class="text-center">ALL DOCTORS</h2>
+                <h2 class="text-center">Todos los Doctores</h2>
                 <section id="team" class="pb-5">
                     <div class="container">
                        <table class="table" id="example"><!--table-hover-->
                             <thead>
                                 <tr>
-                                    <th>Name</th>
+                                    <th>Nombre</th>
                                     <th>Email</th>
-                                    <th>Gender</th>
-                                    <th>Phone Number</th>
-                                    <th>Date of Birth</th>
-                                    <th>Blood Group</th>
-                                    <th>Specialization</th>
-                                    <th>Address</th>
-                                    <th>Action</th>
+                                    <th>Género</th>
+                                    <th>Teléfono</th>
+                                    <th>Fecha de nacimiento</th>
+                                    <th>Grupo Sanguíneo</th>
+                                    <th>Especialidad</th>
+                                    <th>Dirección</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for i in doc %}
+                                {% for doctor in doctors %}
                                 <tr style="color: black;">
-                                    <td>{{ i.name }}</td>
-                                    <td>{{ i.email }}</td>
-                                    <td>{{ i.gender }}</td>
-                                    <td>{{ i.phonenumber }}</td>
-                                    <td>{{ i.birthdate }}</td>
-                                    <td>{{ i.bloodgroup }}</td>
-                                    <td>{{ i.specialization }}</td>
-                                    <td>{{ i.address }}</td>
-                                    <td><a href="{% url 'admin_delete_doctor' i.id i.email %}" onclick="return confirm('Are you sure you want to delete?')" class="btn btn-danger">Delete</a></td>
+                                    <td>{{ doctor.nombre }}</td>
+                                    <td>{{ doctor.email }}</td>
+                                    <td>{{ doctor.sexo }}</td>
+                                    <td>{{ doctor.telefono }}</td>
+                                    <td>{{ doctor.fechanac }}</td>
+                                    <td>{{ doctor.gruposanguineo }}</td>
+                                    <td>{{ doctor.especialidad }}</td>
+                                    <td>{{ doctor.direccion }}</td>
+                                    <td>
+                                        <button class="btn btn-danger eliminar-doctor" data-doctor-id="{{ doctor.id }}" data-doctor-email="{{ doctor.email }}">Eliminar</button>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -67,5 +69,46 @@
 <script src="{% static 'js/Bold-BS4-Animated-Back-To-Top.js' %}"></script>
 <script src="{% static 'js/bs-init.js' %}"></script>
 <script src="{% static 'js/Sidebar-Menu.js' %}"></script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteButtons = document.querySelectorAll('.eliminar-doctor');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                if (confirm('¿Está seguro que desea eliminar al doctor?')) {
+                    var doctorId = this.getAttribute('data-doctor-id');
+                    var doctorEmail = this.getAttribute('data-doctor-email');
+                    if (doctorId && doctorEmail) {
+                        // Realizar una solicitud POST para eliminar el doctor
+                        fetch('/adminviewdoctors/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: 'doctor_id=' + encodeURIComponent(doctorId) + '&doctor_email=' + encodeURIComponent(doctorEmail)
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                location.reload(); // Recargar la página después de eliminar el doctor
+                            } else {
+                                console.error('Error al eliminar al doctor');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error al eliminar al doctor:', error);
+                        });
+                    } else {
+                        console.error('ID o email del doctor no encontrados');
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+
 </body>
 </html>

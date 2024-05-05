@@ -150,24 +150,42 @@ def createaccountpage(request):
 def login_recovery(request):
     if request.method == 'POST':
         email = request.POST.get('email')
+        nueva_contrasena = request.POST.get('new_password1') 
+        
+         # Verificar si el correo electrónico pertenece a un paciente
         try:
             paciente = Pacientes.objects.get(email=email)
-        except Pacientes.DoesNotExist:
-            return render(request, {'message': 'El paciente no existe en la base de datos.'})
-
-        nueva_contrasena = request.POST.get('new_password1') 
-        if nueva_contrasena:
             paciente.password = nueva_contrasena
             paciente.save()
-            
-            # Envía un mensaje de éxito
-            messages.success(request, 'Contraseña actualizada exitosamente.')
-        
-        # Renderiza la página de recuperación de contraseña con el paciente y el mensaje de éxito
-        return render(request, 'login_recovery.html', {'login_recovery': paciente})
+            messages.success(request, 'Contraseña actualizada exitosamente para el perfil de paciente.')
+            return render(request, 'login_recovery.html', {'login_recovery': paciente})
+        except Pacientes.DoesNotExist:
+            pass
+
+        # Verificar si el correo electrónico pertenece a un administrador
+        try:
+            administrador = Administrador.objects.get(email=email)
+            administrador.password = nueva_contrasena
+            administrador.save()
+            messages.success(request, 'Contraseña actualizada exitosamente para el perfil de administrador.')
+            return render(request, 'login_recovery.html', {'login_recovery': administrador})
+        except Administrador.DoesNotExist:
+            pass
+
+        # Verificar si el correo electrónico pertenece a un doctor
+        try:
+            doctor = Doctores.objects.get(email=email)
+            doctor.password = nueva_contrasena
+            doctor.save()
+            messages.success(request, 'Contraseña actualizada exitosamente para el perfil de doctor.')
+            return render(request, 'login_recovery.html', {'login_recovery': doctor})
+        except Doctores.DoesNotExist:
+            pass
+
+        # Si el correo electrónico no corresponde a ningún perfil, mostrar un mensaje de error
+        messages.error(request, 'El correo electrónico no está registrado en la base de datos.')
 
     return render(request, 'login_recovery.html')
-
 
     
 def loginpage(request):
@@ -213,6 +231,25 @@ def loginpage(request):
             login(request, user)
             # Redirigir al usuario a la página de inicio de pacientes
             return redirect('patienthomepage')
+        
+        
+         # Verificar si el email existe en la base de datos de pacientes
+        administrador = Administrador.objects.filter(email=email).first()
+        if administrador and administrador.password == password:
+            # Autenticar al usuario como paciente
+            user = authenticate(request, username=email, password=password)
+            if user is None:
+                # Verificar si el usuario ya existe en la base de datos de Django
+                if not User.objects.filter(email=email).exists():
+                    # Crear un nuevo usuario de Django si el paciente existe en la base de datos pero no en la de usuarios
+                    user = User.objects.create_user(username=email, email=email, password=password)
+                else:
+                    # Si el usuario ya existe, obtenerlo
+                    user = User.objects.get(email=email)
+            # Iniciar sesión al usuario
+            login(request, user)
+            # Redirigir al usuario a la página de inicio de pacientes
+            return redirect('adminhome')
 
         # Contraseña incorrecta o email no encontrado en ninguna base de datos
         messages.error(request, 'Credenciales inválidas. Por favor, inténtalo de nuevo o regístrate si eres un nuevo usuario.')
@@ -293,8 +330,9 @@ def patientmakeappointments(request):
 
 
 def patientviewappointments(request):
+    usuario_actual = request.user
     # Obtener todas las citas médicas
-    citas = Reservamedica.objects.all()
+    citas = Reservamedica.objects.filter(pacienteemail=usuario_actual.email)
     # Consultar todos los doctores en la base de datos
     doctores = Doctores.objects.all()
     return render(request, 'patientviewappointments.html', {'citas': citas, 'doctores': doctores})
@@ -317,8 +355,9 @@ def doctorprofile(request):
     return render(request, 'doctorprofile.html', {'doctor_details': doctor})
 
 def doctorviewappointments(request):
+    usuario_actual = request.user
     # Obtener todas las citas médicas
-    citas = Reservamedica.objects.all()
+    citas = Reservamedica.objects.filter(doctoremail=usuario_actual.email)
     # Consultar todos los doctores en la base de datos
     doctores = Doctores.objects.all()
     return render(request, 'doctorviewappointments.html', {'citas': citas, 'doctores': doctores})
@@ -397,3 +436,88 @@ def editar_cita(request, cita_id):
             return JsonResponse({'error': str(e)}, status=400)
     else:
         return JsonResponse({'error': 'Método de solicitud no permitido'}, status=405)
+    
+    
+def adminhome(request):
+    if request.user.is_authenticated:
+        # Obtener el doctor basado en el correo electrónico del usuario autenticado
+        administrador = Administrador.objects.filter(email=request.user.email).first()
+        if administrador:
+            return render(request, 'adminhome.html', {'admin_details': administrador})
+        else:
+            messages.error(request, 'No se encontró un doctor con este correo electrónico.')
+            return redirect('adminpage')
+    else:
+        return redirect('adminhome.html')
+
+
+def adminviewappointments(request):
+    # Obtener todas las citas médicas
+    citas = Reservamedica.objects.all()
+    # Consultar todos los doctores en la base de datos
+    doctores = Doctores.objects.all()
+    return render(request, 'adminviewappointments.html', {'citas': citas, 'doctores': doctores})
+
+
+def adminviewdoctors(request):
+    if request.method == 'POST':
+        # Verificar si se está realizando una solicitud de eliminación
+        if 'doctor_id' in request.POST and 'doctor_email' in request.POST:
+            doctor_id = request.POST.get('doctor_id')
+            doctor_email = request.POST.get('doctor_email')
+            try:
+                doctor = Doctores.objects.get(id=doctor_id, email=doctor_email)
+                doctor.delete()
+                return JsonResponse({'message': 'Doctor eliminado correctamente'}, status=200)
+            except Doctores.DoesNotExist:
+                return JsonResponse({'error': 'No se encontró el doctor'}, status=404)
+        
+    # Si no es una solicitud de eliminación POST, simplemente mostrar la página con todos los doctores
+    doctors = Doctores.objects.all()
+    return render(request, 'adminviewdoctors.html', {'doctors': doctors})
+
+
+def adminadddoctor(request):
+    error = ""
+    success = False
+
+    if request.method == 'POST':
+        try:
+            # Procesar los datos del formulario para agregar un nuevo doctor
+            nombre = request.POST.get('nombre')
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            sexo = request.POST.get('gender')
+            telefono = request.POST.get('phonenumber')
+            direccion = request.POST.get('address')
+            fechanac = request.POST.get('dateofbirth')
+            especialidad = request.POST.get('especialidad')
+
+            # Validar la longitud de la contraseña
+            if len(password) < 8 or len(password) > 16:
+                raise ValueError("La contraseña debe tener entre 8 y 16 caracteres")
+
+            # Validar que las contraseñas coincidan
+            repeatpassword = request.POST.get('repeatpassword')
+            if password != repeatpassword:
+                raise ValueError("Las contraseñas no coinciden")
+
+            # Crear el objeto Doctor y guardarlo en la base de datos
+            doctor = Doctores(nombre=nombre, email=email, password=password,
+                                              sexo=sexo, telefono=telefono, direccion=direccion,
+                                              fechanac=fechanac, especialidad=especialidad)
+
+            doctor.save()
+            success = True  # Marcar el registro como exitoso
+            return render(request, 'adminadddoctor.html', {'success': success})
+        except Exception as e:
+            error = str(e)
+
+    return render(request, 'adminadddoctor.html', {'error': error, 'success': success})
+    
+
+
+
+           
+
+    

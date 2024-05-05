@@ -5,5 +5,5 @@ from .models import *
 
 admin.site.register(Pacientes)
 admin.site.register(Doctores)
-admin.site.register(Recepcionista)
+admin.site.register(Administrador)
 admin.site.register(Reservamedica)
