@@ -87,13 +87,10 @@
                             <div class="form-row form-group">
                                 <div class="col-sm-4 label-column">
                                     <label class="col-form-label" for="name-input-field">Password</label>
-                                    
                                 </div>
                                 <div class="col-sm-6 input-column">
                                     <input class="form-control" type="text" name="password" value="{{ patient_details.password }}" readonly>
                                     <input type="hidden" name="password_original" value="{{ patient_details.password }}">
-                                   
-                                                                       
                                 </div>
                             </div>
                             <!-- Campo de gruposanguineo -->
@@ -117,7 +114,7 @@
                             <!-- Botón para modificar los datos -->
                             <button type="button" id="editDataBtn" class="btn btn-primary">Modificar datos</button>
                             <!-- Botón para guardar los cambios -->
-                            <button type="button" id="saveChangesBtn" class="btn btn-primary" onclick="return validarFormulario()" style="display: none;">Guardar cambios</button>
+                            <button type="button" id="saveChangesBtn" class="btn btn-primary" style="display: none;">Guardar cambios</button>
                         </form>
                     </div>
                 </div>
@@ -131,44 +128,7 @@
     <script src="{% static 'js/Bold-BS4-Animated-Back-To-Top.js' %}"></script>
     <script src="{% static 'js/bs-init.js' %}"></script>
     <script src="{% static 'js/Sidebar-Menu.js' %}"></script>
-   
-   
-   <script type="text/javascript">
-        function validarFormulario() {
-            var password = document.getElementsByName("password")[0].value;
-            // Validar longitud
-            if (password.length < 8 || password.length > 16) {
-                alert("La contraseña debe tener entre 8 y 16 caracteres");
-                return false; // Evitar el envío del formulario
-            }
-            // Validar al menos un número
-            if (!/\d/.test(password)) {
-                alert("La contraseña debe contener al menos un número");
-                return false; // Evitar el envío del formulario
-            }
-            // Validar al menos una mayúscula
-            if (!/[A-Z]/.test(password)) {
-                alert("La contraseña debe contener al menos una letra mayúscula");
-                return false; // Evitar el envío del formulario
-            }
-            // Validar al menos una minúscula
-            if (!/[a-z]/.test(password)) {
-                alert("La contraseña debe contener al menos una letra minúscula");
-                return false; // Evitar el envío del formulario
-            }
-            // Validar al menos un carácter especial
-            if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-                alert("La contraseña debe contener al menos un carácter especial");
-                return false; // Evitar el envío del formulario
-            }
-            // Si todas las validaciones son exitosas, enviar el formulario
-            return true;
-        }
-   
-    </script>
-
-<script>
- 
+    <script>
         $(document).ready(function () {
             // Al hacer clic en el botón "Modificar datos"
             $('#editDataBtn').on('click', function () {
@@ -197,45 +157,34 @@
                     }
                 });
                 // Enviar los datos mediante una solicitud AJAX
-            $.ajax({
-                url: '{% url "patientprofile" %}',
-                type: 'POST',
-                // Incluir el token CSRF en los encabezados de la solicitud
-                headers: { "X-CSRFToken": csrfToken },
-                data: formData,
-                success: function (data) {
-                    // Actualizar el valor del campo de contraseña si se ha modificado
-                    var newPassword = $('#editProfileForm input[name="password"]').val();
-                    if (newPassword !== $('#editProfileForm input[name="password_original"]').val()) {
-                        $('#editProfileForm input[name="password_original"]').val(newPassword);
+                $.ajax({
+                    url: '{% url "patientprofile" %}',
+                    type: 'POST',
+                    // Incluir el token CSRF en los encabezados de la solicitud
+                    headers: { "X-CSRFToken": csrfToken },
+                    data: formData,
+                    success: function (data) {
+                        // Actualizar el valor del campo de contraseña si se ha modificado
+                        var newPassword = $('#editProfileForm input[name="password"]').val();
+                        if (newPassword !== $('#editProfileForm input[name="password_original"]').val()) {
+                            $('#editProfileForm input[name="password_original"]').val(newPassword);
+                        }
+                        // Actualizar el valor del campo de fecha después de guardar los cambios
+                        var newDate = $('#editProfileForm input[name="fechanac"]').val();
+                        $('#editProfileForm input[name="fechanac"]').attr('value', newDate);
+                        // Cambiar el texto del botón a "Modificar datos"
+                        $('#editDataBtn').text('Modificar datos').show();
+                        $('#saveChangesBtn').hide();
+                    },
+                    error: function (error) {
+                        console.log(error);
                     }
-                    // Actualizar el valor del campo de fecha después de guardar los cambios
-                    var newDate = $('#editProfileForm input[name="fechanac"]').val();
-                    $('#editProfileForm input[name="fechanac"]').attr('value', newDate);
-                    // Mostrar el mensaje de éxito como una alerta
-                    alert("¡Usuario actualizado con éxito!");
-                    // Cambiar el texto del botón a "Modificar datos"
-                    $('#editDataBtn').text('Modificar datos').show();
-                    $('#saveChangesBtn').hide();
-                },
-                error: function (error) {
-                    console.log(error);
-                }
+                });
             });
         });
-    });
-</script>
+        
 
-{% if success %}
-<script type="text/javascript">
-    window.onload = function() {
-        alert("¡Usuario actualizado con éxito!");
-    }
-</script>
-{% endif %}
-
-
-
+    </script>
 </body>
 
 </html>

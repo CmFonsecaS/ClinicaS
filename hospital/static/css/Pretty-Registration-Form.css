@@ -49,7 +49,7 @@
   color: #5f5f5f;
   box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
   padding: 12px;
-  border: 1px solid #0f0f0f;
+  border: 1px solid #dbdbdb;
   border-radius: 2px;
   height: 42px;
 }
@@ -90,7 +90,7 @@
 
 .custom-input {
   background-color: rgba(255, 255, 255, 0.8); /* Color de fondo semi-transparente */
-  color: black; /* Color del texto blanco */
+  color: #ffffff; /* Color del texto blanco */
   border: 1px solid #ffffff; /* Borde blanco */
   border-radius: 5px; /* Bordes redondeados */
   padding: 10px; /* Espaciado interno */
@@ -104,8 +104,8 @@
 
 .form-control {
   background-color: rgba(255, 255, 255, 0.8); /* Color de fondo semi-transparente */
-  color: black; /* Color del texto blanco */
-  border: 1px solid black; /* Borde blanco */
+  color: #ffffff; /* Color del texto blanco */
+  border: 1px solid #ffffff; /* Borde blanco */
   border-radius: 5px; /* Bordes redondeados */
   padding: 10px; /* Espaciado interno */
 }
@@ -113,5 +113,5 @@
 /* Estilos adicionales para cuando el campo está enfocado */
 .form-control:focus {
   outline: none; /* Quita el borde al enfocar */
-  box-shadow: 0 0 5px rgba(255,black, 255, 0.5); /* Sombra al enfocar */
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); /* Sombra al enfocar */
 }

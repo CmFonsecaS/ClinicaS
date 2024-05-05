@@ -18,7 +18,7 @@
         {% include 'admin_include.html' %}
         <div class="page-content-wrapper">
             <div class="container-fluid">
-                <div class="container-fluid"><a class="btn btn-link" role="button" id="menu-toggle" href="#menu-toggle" style="color: black;"><i class="fa fa-bars"></i></a>
+                <a class="btn btn-link" role="button" id="menu-toggle" href="#menu-toggle"><i class="fa fa-bars"></i></a>
                 <h2 class="text-center">Citas Médicas</h2>
                 <div class="text-center" role="tablist" id="accordion-1">
                     {% for cita in citas %}
@@ -224,56 +224,5 @@
             });
         });
     </script>
-
-</script>
-<script>
-    // Función para ordenar las citas médicas por día, mes y año
-    function ordenarCitasPorFechaActual() {
-        var citasList = document.querySelectorAll('.card');
-        var citasArray = Array.from(citasList);
-
-        citasArray.sort(function(a, b) {
-            var fechaA = new Date(a.querySelector('td:nth-child(3)').textContent); // Seleccionar el tercer td (índice 2)
-            var fechaB = new Date(b.querySelector('td:nth-child(3)').textContent); // Seleccionar el tercer td (índice 2)
-
-            // Comparamos primero los años
-            if (fechaA.getFullYear() !== fechaB.getFullYear()) {
-                return fechaB.getFullYear() - fechaA.getFullYear(); // Orden descendente por año
-            }
-
-            // Luego comparamos los meses
-            if (fechaA.getMonth() !== fechaB.getMonth()) {
-                return fechaB.getMonth() - fechaA.getMonth(); // Orden descendente por mes
-            }
-
-            // Finalmente, comparamos los días
-            return fechaA.getDate() - fechaB.getDate(); // Orden ascendente por día
-        });
-
-        var container = document.querySelector('#accordion-1');
-        container.innerHTML = '';
-
-        citasArray.forEach(function(cita) {
-            var ul = document.createElement('ul');
-            ul.className = 'collapsible popout text-center';
-            ul.dataset.collapsible = 'accordion';
-            var li = document.createElement('li');
-            li.className = 'card';
-            li.appendChild(cita);
-            ul.appendChild(li);
-            container.appendChild(ul);
-        });
-    }
-
-    // Llama a la función para ordenar las citas médicas por día, mes y año al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-        ordenarCitasPorFechaActual();
-    });
-</script>
-
-
-
-
-
 </body>
 </html>
