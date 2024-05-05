@@ -271,9 +271,11 @@ def patienthomepage(request):
         return redirect('loginpage')
 
 
+from django.shortcuts import redirect, render
+
 def patientprofile(request):
-    
     paciente = Pacientes.objects.get(email=request.user.email)
+    success = False  # Inicializa la variable de éxito como False
 
     if request.method == 'POST':
         # Actualizar los datos del paciente
@@ -285,10 +287,12 @@ def patientprofile(request):
         paciente.fechanac = request.POST.get('fechanac', paciente.fechanac)
         paciente.gruposanguineo = request.POST.get('gruposanguineo', paciente.gruposanguineo)
         paciente.save()
+        success = True  # Establece la variable de éxito como True después de guardar los datos
         return redirect('patientprofile')
 
     # Obtener el detalle del paciente
-    return render(request, 'patientprofile.html', {'patient_details': paciente})
+    return render(request, 'patientprofile.html', {'patient_details': paciente, 'success': success})
+
 
 
 def patientmakeappointments(request):
@@ -452,11 +456,20 @@ def adminhome(request):
 
 
 def adminviewappointments(request):
-    # Obtener todas las citas médicas
-    citas = Reservamedica.objects.all()
+    # Obtener la fecha actual
+    today = timezone.now()
+    
+    # Obtener todas las citas médicas del año actual y del siguiente
+    citas = Reservamedica.objects.filter(citamedicafecha__year__gte=today.year - 1).order_by('-citamedicafecha')
+
+    
+    # Obtener una lista de años únicos presentes en las citas médicas
+    años = citas.values_list('citamedicafecha__year', flat=True).distinct()
+    
     # Consultar todos los doctores en la base de datos
     doctores = Doctores.objects.all()
-    return render(request, 'adminviewappointments.html', {'citas': citas, 'doctores': doctores})
+    
+    return render(request, 'adminviewappointments.html', {'citas': citas, 'años': años, 'doctores': doctores})
 
 
 def adminviewdoctors(request):
