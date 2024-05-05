@@ -338,8 +338,10 @@ def patientmakeappointments(request):
 
 def patientviewappointments(request):
     usuario_actual = request.user
-    # Obtener todas las citas médicas
-    citas = Reservamedica.objects.filter(pacienteemail=usuario_actual.email)
+        # Obtener la fecha actual
+    today = timezone.now()
+       # Obtener todas las citas médicas del año actual y del siguiente para el paciente actual
+    citas = Reservamedica.objects.filter(pacienteemail=usuario_actual.email, citamedicafecha__year__gte=today.year - 1).order_by('-citamedicafecha')
     # Consultar todos los doctores en la base de datos
     doctores = Doctores.objects.all()
     return render(request, 'patientviewappointments.html', {'citas': citas, 'doctores': doctores})
@@ -363,8 +365,11 @@ def doctorprofile(request):
 
 def doctorviewappointments(request):
     usuario_actual = request.user
-    # Obtener todas las citas médicas
-    citas = Reservamedica.objects.filter(doctoremail=usuario_actual.email)
+     # Obtener la fecha actual
+    today = timezone.now()
+    
+    # Obtener todas las citas médicas del año actual y del siguiente para el paciente actual
+    citas = Reservamedica.objects.filter(pacienteemail=usuario_actual.email, citamedicafecha__year__gte=today.year - 1).order_by('-citamedicafecha')
     # Consultar todos los doctores en la base de datos
     doctores = Doctores.objects.all()
     return render(request, 'doctorviewappointments.html', {'citas': citas, 'doctores': doctores})
