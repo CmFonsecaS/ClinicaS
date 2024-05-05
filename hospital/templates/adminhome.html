@@ -3,16 +3,35 @@
 <head>
     {% include 'include.html' %}
     {% load static %}
+
+    <style>
+        body {
+            background-image: url("{% static 'img/MainClinica.png' %}");
+            background-size: cover; 
+            background-position: center;
+                }
+    </style>
 </head>
-<body style="background-image: url(&quot;{% static 'img/star-sky.jpg' %}&quot;);">
+
+
     {% include 'adminnav.html' %}
     <div id="wrapper">
         {% include 'admin_include.html' %}
         <div class="page-content-wrapper">
-            <div class="container-fluid"><a class="btn btn-link" role="button" id="menu-toggle" href="#menu-toggle"><i class="fa fa-bars" style="color: white;"></i></a>
-                <h1 class="text-center" style="color: white;">You are sucessfully logged in..{{ user.username }}</h1>
+            <div class="container-fluid"><a class="btn btn-link" role="button" id="menu-toggle" href="#menu-toggle"><i class="fa fa-bars" style="color: black;"></i></a>
+                <h1 class="text-center" style="color: black;">Bienvenid@ a su Perfil...{{ admin_details.nombre }}</h1>
             </div>
         </div>
     </div>
+
+
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/back-to-top-scroll.js' %}"></script>
+<script src="{% static 'js/Bold-BS4-Animated-Back-To-Top.js' %}"></script>
+<script src="{% static 'js/bs-init.js' %}"></script>
+<script src="{% static 'js/Sidebar-Menu.js' %}"></script>
 </body>
+
 </html>
