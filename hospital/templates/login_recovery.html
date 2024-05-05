@@ -1,6 +1,5 @@
 {% include 'include.html' %}
 {% include 'navbar.html' %}
-{% block body %}
 {% load static %}
 
 
@@ -139,41 +138,29 @@
         }
     });
     
-    // AJAX para manejar la recuperación de contraseña
-    $(document).ready(function() {
-        // Al hacer clic en el botón "Recuperar contraseña"
-        $('#recoverPasswordBtn').on('click', function() {
-            // Deshabilitar el botón para evitar clics múltiples
-            $(this).prop('disabled', true);
-            // Obtener el email del paciente para enviar la solicitud de recuperación
-            var email = $('#emailInput').val().trim();
-            // Validar que se haya proporcionado un email
-            if (email === '') {
-                alert('Por favor, ingrese su dirección de correo electrónico.');
-                $(this).prop('disabled', false);
-                return;
+
+$(document).ready(function() {
+    // Al enviar el formulario
+    $('form').on('submit', function(event) {
+        event.preventDefault(); // Prevenir el envío del formulario por defecto
+
+        // Obtener los datos del formulario
+        var formData = $(this).serialize();
+
+        // Hacer la solicitud POST a la vista de recuperación de contraseña
+        $.ajax({
+            url: '/login_recovery/', // URL de la vista de recuperación de contraseña
+            type: 'POST', // Utilizando el método POST para enviar los datos del formulario
+            data: formData,
+            success: function(response) {
+                alert("Contraseña actualizada exitosamente."); // Mostrar mensaje de éxito
+                // Limpiar el formulario después de enviar la solicitud
+                $('form')[0].reset();
+            },
+            error: function(xhr, status, error) {
+                alert("Credenciales inválidas"); // Mostrar mensaje de error
             }
-            // Enviar la solicitud de recuperación mediante una solicitud AJAX
-            $.ajax({
-                url: '{% url "login_recovery" %}',
-                type: 'POST',
-                data: { 'email': email },
-                success: function(data) {
-                    alert('Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.');
-                    // Limpiar el campo de email después de enviar la solicitud
-                    $('#emailInput').val('');
-                    // Habilitar nuevamente el botón de recuperar contraseña
-                    $('#recoverPasswordBtn').prop('disabled', false);
-                },
-                error: function(error) {
-                    console.log(error);
-                    alert('Ha ocurrido un error al enviar la solicitud. Por favor, inténtalo de nuevo más tarde.');
-                    // Habilitar nuevamente el botón de recuperar contraseña en caso de error
-                    $('#recoverPasswordBtn').prop('disabled', false);
-                }
-            });
         });
     });
+});
 </script>
-
-{% endblock %}

@@ -11,5 +11,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('reservamedica/<int:cita_id>/', views.cancelar_cita, name='cancelar_cita'),
     path('reservamedica/<int:cita_id>/editar/', views.editar_cita, name='editar_cita'),
+     path('pacientes/<int:paciente_id>/editar_password/', views.login_recovery, name='editar_password'),
+
     
 ]
