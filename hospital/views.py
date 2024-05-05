@@ -130,6 +130,9 @@ def createaccountpage(request):
             # Validar que las contraseñas coincidan
             if password != repeatpassword:
                 raise ValueError("Las contraseñas no coinciden")
+            
+            if Pacientes.objects.filter(email=email).exists():
+                raise ValueError("El correo electrónico ingresado ya está registrado")
 
             # Crear el objeto Paciente y guardarlo en la base de datos
             paciente = Pacientes(nombre=nombre, email=email, password=password, sexo=sexo,
