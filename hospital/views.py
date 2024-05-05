@@ -146,31 +146,30 @@ def createaccountpage(request):
     return render(request, 'createaccount.html', {'error': error, 'success': success})
 
 
+
 def login_recovery(request):
     if request.method == 'POST':
         email = request.POST.get('email')
-        new_password1 = request.POST.get('new_password1')
-        new_password2 = request.POST.get('new_password2')
+        try:
+            paciente = Pacientes.objects.get(email=email)
+        except Pacientes.DoesNotExist:
+            return render(request, {'message': 'El paciente no existe en la base de datos.'})
 
-        # Validar que las contraseñas coincidan
-        if new_password1 != new_password2:
-            # Devolver un mensaje de error si las contraseñas no coinciden
-            return render(request, 'login_recovery.html', {'error_message': 'Las contraseñas no coinciden'})
+        nueva_contrasena = request.POST.get('new_password1') 
+        if nueva_contrasena:
+            paciente.password = nueva_contrasena
+            paciente.save()
+            
+            # Envía un mensaje de éxito
+            messages.success(request, 'Contraseña actualizada exitosamente.')
+        
+        # Renderiza la página de recuperación de contraseña con el paciente y el mensaje de éxito
+        return render(request, 'login_recovery.html', {'login_recovery': paciente})
 
-        # Cambiar la contraseña del usuario
-        user = User.objects.filter(email=email).first()
-        if user:
-            user.set_password(new_password1)
-            user.save()
-            # Redirigir a una página de éxito o mostrar un mensaje de éxito
-            return render(request, 'login_recovery.html', {'success_message': 'Contraseña cambiada con éxito'})
-        else:
-            # Devolver un mensaje de error si el usuario no existe
-            return render(request, 'login_recovery.html', {'error_message': 'El usuario no existe'})
-
-    # Renderizar el formulario de recuperación de contraseña
     return render(request, 'login_recovery.html')
 
+
+    
 def loginpage(request):
     if request.method == 'POST':
         email = request.POST.get('email', '')
